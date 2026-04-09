@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # Reproducibility Review Queuing System
 
 **University of Florida Laboratory of Systems Medicine**
@@ -36,257 +37,6 @@ The system uses GitHub's built-in features to:
 ---
 
 <details>
-<summary><strong>Core Components</strong></summary>
-
-The system is built entirely on standard GitHub features:
-
-### 1. GitHub Issues
-
-**What they are:** Issues are discussion threads attached to a repository. Originally designed for bug tracking, we repurpose them to track manuscripts in the review queue.
-
-**How we use them:**
-- **One issue = one manuscript** being reviewed
-- **Issue title** = manuscript name
-- **Issue body** = manuscript details (DOI, URL, description)
-- **Issue labels** = current workflow state (`queued`, `review-1-active`, etc.)
-- **Issue assignees** = who is currently reviewing it
-- **Issue comments** = reviewer commands and automation responses
-- **Issue timeline** = complete history of label changes, assignments, state transitions
-
-**Why this creates transparency:**
-- Anyone with repository access can see all manuscripts in the queue
-- Anyone can see who is assigned to what
-- Anyone can see how long a review has been active
-- Complete history is preserved (when was it claimed? by whom? when did it advance?)
-
-**Example:** Issue #5 titled "Hepatitis B Viral Dynamics Model"
-- Label: `review-1-active`
-- Assigned to: `@reviewer-jane`
-- Comment history shows: `/checkout` command by reviewer-jane on April 1, 2026
-
-### 2. GitHub Pull Requests
-
-**What they are:** Pull requests (PRs) are proposed changes to the repository. They show exactly what files will be added/modified, allow discussion, and require approval before merging.
-
-**How we use them:**
-- Reviewers submit their work (notebooks, PDFs, metadata) via pull request
-- Automated checks validate the submission structure
-- Other reviewers or maintainers can see exactly what's being added
-- Changes aren't added to the repository until the PR is approved and merged
-
-**Why this creates transparency:**
-- **Before merging:** Everyone can see what a reviewer is submitting
-- **Diff view:** GitHub shows exactly what files are being added and their contents
-- **Validation:** Automated checks run publicly-everyone sees if checks pass or fail
-- **Discussion:** Anyone can comment on the PR to ask questions or request changes
-- **Approval required:** Changes don't automatically enter the repository; a maintainer must approve
-
-**Example:** PR #12 titled "Add first review for HBV manuscript"
-- Shows: 4 files added (notebook.ipynb, manuscript.pdf, output.png, metadata.yml)
-- Automated check: ✅ All required files present
-- Automated check: ✅ YAML structure valid
-- Maintainer reviews and clicks "Merge pull request"
-
-### 3. GitHub Labels
-
-**What they are:** Colored tags attached to issues to categorize them.
-
-**How we use them:** Each label represents a state in the review workflow:
-
-| Label | Color | Meaning |
-|-------|-------|---------|
-| `queued` | Gray | Manuscript entered, awaiting first reviewer |
-| `review-1-active` | Yellow | First reviewer currently working |
-| `awaiting-review-2` | Green | First review complete, ready for second reviewer |
-| `review-2-active` | Yellow | Second reviewer currently working |
-| `complete` | Purple | Both reviews done, package archived |
-
-**Why this creates transparency:**
-- Visual status at a glance (filter issues by label to see all manuscripts in a specific state)
-- Label changes are logged in issue timeline with timestamps
-- No way to skip states-automation enforces the state machine
-- Color coding makes queue status obvious
-
-### 4. GitHub Actions (Workflows)
-
-**What they are:** Automated scripts that run when specific events happen (e.g., issue comment posted, pull request opened).
-
-**How we use them:**
-- **Workflow 1:** When someone comments on an issue, check if it's a slash command (`/checkout`, `/release`, `/approve`) and execute it
-- **Workflow 2:** When a pull request is opened, validate that required files are present and structured correctly
-- **Workflow 3:** When a review is approved, zip files, email them, close the issue
-
-**Why this creates transparency:**
-- All workflow code is visible in `.github/workflows/` folder (anyone can read the automation logic)
-- Every workflow run is logged publicly in the **Actions** tab with timestamped execution records
-- If a workflow fails, the error log is visible (no silent failures)
-- Workflows run on GitHub's servers (no hidden server running somewhere)
-
-### 5. Git Version Control
-
-**What it is:** Git tracks every change to every file, who made it, and when.
-
-**How we use it:**
-- Every review submission creates Git commits (snapshots of changes)
-- Commits are attributed to the reviewer's GitHub account
-- Complete history of all changes is preserved forever
-- Any version of any file can be retrieved from history
-
-**Why this creates transparency:**
-- **Attribution:** Every change has an author and timestamp
-- **Reversibility:** Mistakes can be undone by reverting to previous versions
-- **Inspection:** Anyone can see what changed between versions
-- **Immutability:** Once committed, history cannot be secretly altered (commits are cryptographically hashed)
-
-</details>
-
----
-
-<details>
-<summary><strong>How Transparency is Achieved</strong></summary>
-
-Every action in this system is visible and verifiable:
-
-### What You Can See:
-
-**Issue List:**
-- All manuscripts currently in queue
-- Which state each manuscript is in
-- Who is assigned to each manuscript
-- How long they've been assigned
-
-**Issue Timeline:**
-- When the manuscript was added (issue created)
-- When first reviewer claimed it (label changed to `review-1-active`)
-- When first review was completed (label changed to `awaiting-review-2`)
-- When second reviewer claimed it (label changed to `review-2-active`)
-- When review was finalized (label changed to `complete`, issue closed)
-
-**Pull Request History:**
-- All review submissions
-- What files were added
-- Whether automated checks passed
-- Discussion/feedback on submissions
-- Who approved and merged the submission
-
-**Git Commit History:**
-- Every file change
-- Who made each change
-- When they made it
-- What the change was (diff view)
-
-**Workflow Execution Logs:**
-- Every time automation ran
-- What it did
-- Whether it succeeded or failed
-- Complete console output
-
-### What You Cannot Do (Enforced by GitHub):
-
-- ❌ Change issue labels without leaving a trace in the timeline
-- ❌ Assign yourself without GitHub logging it
-- ❌ Merge a pull request without automated checks passing (if configured as required)
-- ❌ Modify Git history without creating "force push" warnings
-- ❌ Delete workflow execution logs (GitHub retains them)
-- ❌ Run slash commands unless you're a repository collaborator (permission check)
-
-</details>
-
----
-
-<details>
-<summary><strong>The Queuing System Mechanism</strong></summary>
-
-### How Manuscripts Enter the Queue
-
-1. **Issue is created** using the "Add manuscript to review queue" template
-2. **Initial label is set** to `queued`
-3. **Manuscript appears in queue** (visible to all reviewers)
-
-### How Reviewers Claim Work
-
-Instead of being assigned by a coordinator, reviewers **self-select** work:
-
-1. **Reviewer browses issues** and finds one labeled `queued` (or `awaiting-review-2` for second reviews)
-2. **Reviewer comments** `/checkout` on the issue
-3. **GitHub Action workflow triggers:**
-   - Detects the `/checkout` command in the comment
-   - Verifies commenter is a repository collaborator (permission check)
-   - Assigns the issue to the commenter
-   - Changes label to next state (`review-1-active` or `review-2-active`)
-   - Posts automated confirmation comment
-
-**Example workflow execution:**
-```
-User @reviewer-jane comments: "/checkout"
-Workflow runs:
-  ✓ User is collaborator
-  ✓ Issue is in 'queued' state
-  → Assign issue to @reviewer-jane
-  → Change label from 'queued' to 'review-1-active'
-  → Post comment: "Assigned to @reviewer-jane. State: review-1-active"
-```
-
-**Why this is transparent:**
-- The `/checkout` comment is visible to everyone
-- The workflow execution is logged in Actions tab
-- The label change appears in issue timeline
-- The assignment appears in issue sidebar and timeline
-
-### How Reviews Progress
-
-**First Review:**
-1. Reviewer creates folder in `reviews/in-progress/<name>/`
-2. Adds Jupyter notebook reproducing manuscript results
-3. Adds manuscript PDF, output images, metadata file
-4. Opens pull request
-5. Automated validation checks structure
-6. Maintainer reviews and merges PR
-7. Reviewer or maintainer moves folder to `reviews/awaiting-review-2/`
-8. Issue label changed to `awaiting-review-2`
-
-**Second Review:**
-1. Different reviewer comments `/checkout` on `awaiting-review-2` issue
-2. Workflow assigns them, changes label to `review-2-active`
-3. Reviewer independently runs the first reviewer's notebook
-4. Reviewer verifies results match manuscript claims
-5. (Optional) Reviewer adds `review2.md` notes via pull request
-6. Reviewer comments `/approve` on issue
-7. Workflow triggers completion:
-   - Moves folder to `reviews/completed/`
-   - Zips all files
-   - Emails zip to designated recipient
-   - Changes label to `complete`
-   - Closes issue
-
-### State Transitions (Enforced by Automation)
-
-The workflow enforces valid state transitions:
-
-```
-Valid transitions:
-  queued → review-1-active (via /checkout)
-  review-1-active → queued (via /release)
-  review-1-active → awaiting-review-2 (via PR merge)
-  awaiting-review-2 → review-2-active (via /checkout)
-  review-2-active → awaiting-review-2 (via /release)
-  review-2-active → complete (via /approve)
-
-Invalid transitions are rejected:
-  queued → complete ❌ (cannot skip reviews)
-  review-1-active → review-2-active ❌ (must complete first review)
-```
-
-If someone tries to run `/checkout` on an issue in the wrong state, the workflow rejects it and posts an error comment.
-
-</details>
-
----
-
-<details>
-<summary><strong>How Self-Review is Prevented</strong></summary>
-
-**The Problem:** A reviewer could theoretically review their own first submission as the second reviewer, defeating the purpose of independent verification.
 
 **The Solution:** The workflow enforces reviewer separation.
 
@@ -566,3 +316,43 @@ This system uses standard GitHub features (issues, pull requests, labels, action
 **Result:** A review queue where nothing happens in secret, everything is traceable, and anyone with access can verify that the process followed the rules.
 
 </details>
+=======
+# SDE Review Queue
+
+This repository is a lightweight review-tracking system for manuscripts, notebooks, and reproducibility checks.
+
+It was designed for academic teams that need a simple way to coordinate first-pass and second-pass review work without adding a separate database or web application. Undergraduates and graduate reviewers use GitHub issues to claim work, record progress, and hand submissions from one review stage to the next.
+
+## What the system does
+
+- Tracks each submission as a GitHub issue
+- Records review packages in the repository so work is visible and auditable
+- Enforces a two-stage review flow with different reviewers at each stage
+- Automates state changes, packaging, and completion notifications with GitHub Actions
+
+The review lifecycle is:
+
+```text
+queued -> review-1-active -> awaiting-review-2 -> review-2-active -> complete
+```
+
+## How teams use it
+
+In practice, reviewers pick up work from the issue queue, complete or verify the associated notebook and manuscript materials, and move the package forward. The repository acts as the shared record of who reviewed what, when it was reviewed, and whether it is ready for the next stage.
+
+This keeps the process quick to explain:
+
+- New work enters the queue as an issue
+- A first reviewer claims it and prepares the review package
+- A second reviewer independently checks it
+- Approval closes the issue and triggers the final delivery step
+
+## Documentation
+
+- Reviewer workflow: [docs/USAGE.md](docs/USAGE.md)
+- Reviewer step-by-step guide: [CONTRIBUTING.md](CONTRIBUTING.md)
+- Maintainer setup: [docs/SETUP.md](docs/SETUP.md)
+
+## Why this approach
+
+The system stays intentionally simple. GitHub provides authentication, history, storage, automation, and issue tracking, so the queue can remain transparent and easy to maintain while still supporting a formal review process.
