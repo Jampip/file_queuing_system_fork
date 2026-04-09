@@ -20,9 +20,10 @@ queued  →  review-1-active  →  awaiting-review-2  →  review-2-active  → 
 
 The second reviewer must be a different person than the first — this is enforced automatically. When a review is approved, the package is zipped and emailed to the designated recipient, and the issue closes.
 
-**Reviewers:** see [`CONTRIBUTING.md`](CONTRIBUTING.md) for the full walkthrough of doing a first or second review.
-
-**New to the repository?** See [`docs/LOCAL_SETUP_GUIDE.md`](docs/LOCAL_SETUP_GUIDE.md) for step-by-step instructions on cloning the repo, setting up your environment, and working with VS Code (with or without GitHub Copilot).
+**New to the repository?** Start here:
+1. [`docs/LOCAL_SETUP_GUIDE.md`](docs/LOCAL_SETUP_GUIDE.md) - First-time setup (install Git, VS Code, Python, etc.)
+2. [`docs/WORKFLOW_GUIDE.md`](docs/WORKFLOW_GUIDE.md) - Step-by-step: clone, add files, and create pull requests
+3. [`CONTRIBUTING.md`](CONTRIBUTING.md) - What to do in each review (content-specific instructions)
 
 **To add a manuscript to the queue:** open a new issue using the *"Add manuscript to review queue"* template.
 
