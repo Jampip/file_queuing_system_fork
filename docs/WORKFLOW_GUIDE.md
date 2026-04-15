@@ -82,6 +82,30 @@ Follow the instructions in [LOCAL_SETUP_GUIDE.md - Step 4](LOCAL_SETUP_GUIDE.md#
 
 **Do this every time you sit down to work on a review.**
 
+### VS Code Sync Check
+
+In VS Code, you can confirm your Git state in two places:
+
+1. Look at the **bottom-left status bar**
+   - It should show your branch name, usually `main`
+   - If you see a number on the sync icon, GitHub has changes to pull or local commits to push
+2. Open the **Source Control** panel
+   - If it is empty, you have no uncommitted local changes
+   - If files appear there, you still have local work that is not committed yet
+
+If you want one exact command that tells you whether you are synced, run:
+
+```powershell
+git status --short --branch
+```
+
+How to read it:
+
+- `## main...origin/main` = synced
+- `## main...origin/main [ahead 1]` = you have a commit that still needs to be pushed
+- `## main...origin/main [behind 1]` = GitHub has changes you still need to pull
+- `## main...origin/main [ahead 1, behind 1]` = both changed; stop and ask a maintainer before guessing
+
 ### Step 1: Open PowerShell and Navigate to the Repository
 
 ```powershell
@@ -93,10 +117,12 @@ cd C:\Users\YourName\Documents\file_queuing_system
 Before you start working, always pull the latest changes:
 
 ```powershell
-git pull
+git pull --ff-only origin main
 ```
 
 **What this does:** Downloads any changes other people made since you last worked.
+
+`--ff-only` means Git will only update cleanly. If Git cannot do that safely, it stops instead of making an unexpected merge.
 
 **You'll see:**
 ```
@@ -258,10 +284,16 @@ git commit -m "Add first review for MyReview"
 
 ### Step 4: Push to GitHub (Upload to the Cloud)
 
-This uploads your changes to GitHub so others can see them.
+Before you push, do one quick sync step so you do not push from an out-of-date copy.
 
 ```powershell
-git push
+git pull --rebase origin main
+```
+
+If that succeeds, push:
+
+```powershell
+git push origin main
 ```
 
 **You'll see:**
@@ -274,6 +306,22 @@ To https://github.com/Lizo-RoadTown/file_queuing_system.git
 ```
 
 ✅ **Your changes are now on GitHub!**
+
+### Step 5: Confirm You Are Synced Again
+
+Right after pushing, run:
+
+```powershell
+git status --short --branch
+```
+
+If it shows:
+
+```text
+## main...origin/main
+```
+
+then your computer and GitHub are synced.
 
 ---
 
@@ -477,12 +525,13 @@ The PR updates automatically!
 
 ### What if someone else merged changes while I was working?
 
-Before pushing:
+After you commit your work, but before you push:
+
 ```powershell
-git pull
+git pull --rebase origin main
 ```
 
-If there are conflicts (you both edited the same file), Git will tell you. Ask a maintainer for help resolving conflicts.
+If there are conflicts, Git will tell you. Stop there and ask a maintainer for help rather than guessing.
 
 ### Can I work on multiple reviews at once?
 
@@ -502,8 +551,8 @@ Don't panic! Git can undo almost anything. Contact a maintainer and explain what
 
 **Fix:**
 ```powershell
-git pull
-git push
+git pull --rebase origin main
+git push origin main
 ```
 
 ### "Your branch is behind origin/main"
@@ -512,8 +561,21 @@ git push
 
 **Fix:**
 ```powershell
-git pull
+git pull --ff-only origin main
 ```
+
+### The safest quick routine in VS Code
+
+If people are nervous, use this exact pattern every time:
+
+1. At the start of work: run `git pull --ff-only origin main`
+2. While working: glance at the Source Control panel and make sure you only see the files you meant to change
+3. Before pushing: run `git status --short --branch`
+4. If you already committed: run `git pull --rebase origin main`
+5. Push with `git push origin main`
+6. Confirm sync with `git status --short --branch`
+
+If the final result is `## main...origin/main`, you are fully synced.
 
 ### "There isn't anything to compare" when creating PR
 
