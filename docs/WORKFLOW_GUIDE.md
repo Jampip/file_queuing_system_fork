@@ -106,6 +106,19 @@ How to read it:
 - `## main...origin/main [behind 1]` = GitHub has changes you still need to pull
 - `## main...origin/main [ahead 1, behind 1]` = both changed; stop and ask a maintainer before guessing
 
+### Preferred Method: Use the VS Code Git Buttons
+
+For most reviewers, the safest approach is to use the **Source Control** panel in VS Code instead of typing Git commands manually.
+
+Use this exact order when you are ready to save work to GitHub:
+
+1. **Review your changed files** in the Source Control panel
+2. **Commit** in VS Code
+3. **Sync Changes** in VS Code
+4. **After syncing:** make sure the Source Control panel is clear and the branch shows `main` with no pending sync count
+
+Use the terminal only if VS Code shows an error message or if a maintainer asks you to run a specific command.
+
 ### Step 1: Open PowerShell and Navigate to the Repository
 
 ```powershell
@@ -114,7 +127,15 @@ cd C:\Users\YourName\Documents\file_queuing_system
 
 ### Step 2: Get the Latest Changes from GitHub
 
-Before you start working, always pull the latest changes:
+If you have not started editing yet and want to make sure you have the latest copy first, get the latest changes from GitHub.
+
+**Preferred in VS Code:**
+
+1. Open the **Source Control** panel
+2. Click **...** at the top of the Source Control panel
+3. Click **Pull**, or click **Sync Changes** if VS Code offers it
+
+**Terminal fallback:**
 
 ```powershell
 git pull --ff-only origin main
@@ -123,6 +144,8 @@ git pull --ff-only origin main
 **What this does:** Downloads any changes other people made since you last worked.
 
 `--ff-only` means Git will only update cleanly. If Git cannot do that safely, it stops instead of making an unexpected merge.
+
+If you already started editing files, do **not** stop and pull in the middle unless a maintainer tells you to. Finish your local work, commit it, and then use **Sync Changes**.
 
 **You'll see:**
 ```
@@ -218,7 +241,13 @@ Think of Git like taking a photo:
 
 ### Step 1: Check What Changed
 
-In PowerShell (or VS Code's terminal - press `` Ctrl+` ``):
+**Preferred in VS Code:**
+
+1. Click the **Source Control** icon in the left sidebar
+2. Review the changed files list
+3. Make sure you only see the files you intended to change
+
+**Terminal fallback:**
 
 ```powershell
 git status
@@ -239,6 +268,12 @@ This shows what files you've added or changed (in red).
 ### Step 2: Stage Your Files
 
 This tells Git which files to save.
+
+**Preferred in VS Code:**
+
+1. In the **Source Control** panel, hover over each file you want to include
+2. Click the **+** next to the file, or click **+** next to **Changes** to stage all listed files
+3. Double-check that only the right files are under **Staged Changes**
 
 **To add everything you've changed:**
 ```powershell
@@ -263,6 +298,14 @@ Now the files should be in green under "Changes to be committed."
 
 This saves your changes **locally** on your computer with a description.
 
+**Preferred in VS Code:**
+
+1. Type a short commit message in the Source Control message box
+2. Click **Commit**
+3. If VS Code asks whether to stage all changes first, only agree if the file list is correct
+
+**Terminal fallback:**
+
 ```powershell
 git commit -m "Add first review for MyReview"
 ```
@@ -284,7 +327,19 @@ git commit -m "Add first review for MyReview"
 
 ### Step 4: Push to GitHub (Upload to the Cloud)
 
-Before you push, do one quick sync step so you do not push from an out-of-date copy.
+In VS Code, the safer button here is usually **Sync Changes**, not **Push**.
+
+**Preferred in VS Code:**
+
+1. Click **Sync Changes**
+2. If VS Code asks to pull first, allow it
+3. If VS Code shows a conflict or rejection message, stop and ask a maintainer before choosing options you do not recognize
+
+**Why this is safer:** `Sync Changes` handles both directions. `Push` only sends your work up and is more likely to fail if GitHub changed first.
+
+For this team, the practical rule is simple: people usually do not need to think about syncing until they are ready to commit and send work.
+
+**Terminal fallback:**
 
 ```powershell
 git pull --rebase origin main
@@ -309,7 +364,13 @@ To https://github.com/Lizo-RoadTown/file_queuing_system.git
 
 ### Step 5: Confirm You Are Synced Again
 
-Right after pushing, run:
+**Preferred in VS Code:**
+
+1. Check that the **Source Control** panel is empty
+2. Check that the bottom-left branch indicator still shows `main`
+3. Check that VS Code is not showing a pending sync count
+
+**Terminal fallback:**
 
 ```powershell
 git status --short --branch
@@ -566,16 +627,28 @@ git pull --ff-only origin main
 
 ### The safest quick routine in VS Code
 
-If people are nervous, use this exact pattern every time:
+If people are nervous, use this exact pattern every time they are ready to save work:
 
-1. At the start of work: run `git pull --ff-only origin main`
-2. While working: glance at the Source Control panel and make sure you only see the files you meant to change
-3. Before pushing: run `git status --short --branch`
-4. If you already committed: run `git pull --rebase origin main`
-5. Push with `git push origin main`
-6. Confirm sync with `git status --short --branch`
+1. Look at the Source Control panel and make sure you only see the files you meant to change
+2. Confirm the correct files are staged
+3. Commit from the Source Control panel with a clear message
+4. Click **Sync Changes** in VS Code
+5. If VS Code needs to pull first, allow it
+6. Confirm the Source Control panel is empty and the sync indicator is clear
 
-If the final result is `## main...origin/main`, you are fully synced.
+If anyone wants an exact terminal check, `git status --short --branch` should show `## main...origin/main`.
+
+### Short version: what goes before what
+
+1. **Do the work**
+2. **Review the changed files**
+3. **Commit**
+4. **Sync Changes**
+5. **Confirm you are synced**
+
+If someone has not started editing yet, they can pull first. But the minimum sequence they need to remember is: **Commit, then Sync Changes, then confirm you are synced.**
+
+Do **not** tell reviewers to push first in order to sync. That is the step that causes many of the avoidable errors.
 
 ### "There isn't anything to compare" when creating PR
 
