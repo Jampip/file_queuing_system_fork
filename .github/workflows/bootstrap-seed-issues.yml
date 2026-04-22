@@ -88,17 +88,18 @@ jobs:
                     try {
                       const notebookPath = path.join(itemPath, notebookFile);
                       const notebook = JSON.parse(fs.readFileSync(notebookPath, 'utf8'));
-                      const firstMarkdownCell = notebook.cells && notebook.cells.find(cell => cell.cell_type === 'markdown');
-                      if (firstMarkdownCell) {
-                        let source = firstMarkdownCell.source;
+                      const markdownCells = notebook.cells ? notebook.cells.filter(cell => cell.cell_type === 'markdown') : [];
+                      for (const cell of markdownCells.slice(0, 3)) { // Check first 3 markdown cells
+                        let source = cell.source;
                         if (Array.isArray(source)) {
                           source = source.join('');
                         } else if (typeof source !== 'string') {
                           source = '';
                         }
                         const lines = source.split('\n');
+                        let foundFields = false;
                         for (const line of lines) {
-                          const match = line.match(/^(\w+):\s*(.+)$/);
+                          const match = line.match(/^\s*(?:-\s*)?(?:\*\*)?(\w+)(?:\*\*)?:\s*(.+)$/);
                           if (match) {
                             const field = match[1];
                             const value = match[2];
@@ -109,8 +110,10 @@ jobs:
                             else if (field === 'Figure') figure = value;
                             else if (field === 'Outcome') outcome = value;
                             else if (field === 'Notes') notes = value;
+                            foundFields = true;
                           }
                         }
+                        if (foundFields) break; // Stop at the first cell with labeled fields
                       }
                     } catch (e) {
                       // Ignore parsing errors
