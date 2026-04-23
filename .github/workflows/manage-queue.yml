@@ -154,11 +154,8 @@ jobs:
               const notebookBase = notebookName.replace(/\.ipynb$/, '');
               const checkoutTimestamp = new Date().toISOString();
               const paperFolder = path.basename(folderPath);
-              fs.mkdirSync(path.join(folderPath, 'original'), { recursive: true });
               fs.mkdirSync(path.join(folderPath, 'review-copy'), { recursive: true });
               fs.mkdirSync(path.join(folderPath, 'notes'), { recursive: true });
-              const originalPath = path.join(folderPath, 'original', notebookName);
-              fs.copyFileSync(notebookPath, originalPath);
               const reviewCopyPath = path.join(folderPath, 'review-copy', `${notebookBase}_rvd.ipynb`);
               fs.copyFileSync(notebookPath, reviewCopyPath);
               const notesPath = path.join(folderPath, 'notes', 'review_notes.md');
@@ -170,15 +167,9 @@ jobs:
             };
 
             const validateReviewStructure = (folderPath) => {
-              const requiredDirs = ['original', 'review-copy', 'notes'];
-              for (const dir of requiredDirs) {
-                if (!fs.existsSync(path.join(folderPath, dir))) {
-                  throw new Error(`Missing required directory: ${dir}`);
-                }
-              }
-              const originalNotebook = fs.readdirSync(path.join(folderPath, 'original')).find(f => f.endsWith('.ipynb'));
-              if (!originalNotebook) {
-                throw new Error('Missing original notebook in original/');
+              const notebooks = fs.readdirSync(folderPath).filter(f => f.endsWith('.ipynb'));
+              if (notebooks.length !== 1) {
+                throw new Error('Expected exactly one root-level .ipynb notebook in the review folder.');
               }
               const reviewCopyNotebook = fs.readdirSync(path.join(folderPath, 'review-copy')).find(f => f.endsWith('_rvd.ipynb'));
               if (!reviewCopyNotebook) {
